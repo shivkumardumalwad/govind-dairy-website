@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard | Govind Dairy Shop</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="logo">🥛 Govind Dairy - Admin</div>
+    <nav class="nav-menu">
+      <a href="../home page/index.html">Home</a>
+      <a href="../product page/products.html">Products</a>
+      <a href="../login page/login.html">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Admin Dashboard</h2>
+
+    <section class="admin-section">
+      <h3>Add New Product</h3>
+      <form id="productForm">
+        <input type="text" id="productName" placeholder="Product Name" required />
+        <input type="number" id="productPrice" placeholder="Price (₹)" min="0" step="0.01" required />
+        <input type="text" id="productCategory" placeholder="Category" />
+        <input type="text" id="productDesc" placeholder="Short description (optional)" />
+        <button type="submit" class="btn">Add Product</button>
+      </form>
+
+      <h3>Product List</h3>
+      <div id="productMsg" class="message"></div>
+      <table class="product-table">
+        <thead>
+          <tr><th>Product</th><th>Price (₹)</th><th>Category</th><th>Stock</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="productList"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Govind Dairy Shop - Admin Panel</p>
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>

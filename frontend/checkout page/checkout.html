@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout | Govind Dairy Shop</title>
+    <link rel="stylesheet" href="../home page/style.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="logo">🥛 Govind Dairy</div>
+    <nav class="nav-menu">
+      <a href="../home page/index.html">Home</a>
+      <a href="../product page/products.html">Products</a>
+      <a href="../cart/cart.html">Cart</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2 style="text-align: center;">Checkout</h2>
+    <div class="checkout-box">
+      <form id="checkoutForm">
+        <input type="text" placeholder="Full Name" required />
+        <input type="text" placeholder="Address" required />
+        <input type="text" placeholder="City" required />
+        <input type="text" placeholder="Postal Code" required />
+        <input type="text" placeholder="Phone Number" required />
+        <button type="submit">Place Order</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Govind Dairy Shop</p>
+  </footer>
+
+  <script>
+    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert("Order placed successfully! Thank you for shopping with us.");
+      localStorage.removeItem("cart");
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

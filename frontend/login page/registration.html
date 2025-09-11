@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register | Govind Dairy Shop</title>
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <header><h2>🥛 Govind Dairy Shop</h2></header>
+
+  <main class="container">
+    <div class="box">
+      <h2>Create Account</h2>
+      <form id="registerForm">
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Register</button>
+      </form>
+      <p>Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </main>
+
+  <footer><p>&copy; 2025 Govind Dairy Shop</p></footer>
+
+<script>
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "login.html"; // redirect if not logged in
+  } else {
+    // check validity
+    fetch("http://localhost:5000/profile", {
+      headers: { "Authorization": token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.msg === "Invalid token") {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+      } else {
+        console.log("Welcome", data.user.username);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

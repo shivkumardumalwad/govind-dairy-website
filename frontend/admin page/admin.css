@@ -1,0 +1,54 @@
+:root{
+  --primary:#0077cc;
+  --muted:#f6f7fb;
+  --card-bg:#ffffff;
+  --danger:#d9534f;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter, system-ui, Arial, sans-serif;
+  background:var(--muted);
+  color:#222;
+}
+.main-header{
+  background:var(--primary);
+  color:#fff;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logo{font-weight:700}
+.nav-menu a{color:#fff;margin-left:12px;text-decoration:none}
+.container{
+  max-width:1000px;
+  margin:28px auto;
+  padding:0 16px;
+}
+.admin-section{
+  background:var(--card-bg);
+  padding:18px;
+  border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+}
+h2{text-align:center;margin-top:0}
+form{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+form input{padding:10px;border-radius:8px;border:1px solid #ddd;flex:1 1 200px}
+.btn{
+  background:var(--primary);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;
+}
+.btn:active{transform:translateY(1px)}
+.product-table{width:100%;border-collapse:collapse;margin-top:10px}
+.product-table th, .product-table td{
+  border:1px solid #eee;padding:10px;text-align:center;font-size:14px
+}
+.message{color:var(--primary);margin-bottom:8px}
+.action-btn{padding:6px 8px;border-radius:6px;border:none;cursor:pointer}
+.delete{background:var(--danger);color:#fff}
+.edit{background:#28a745;color:#fff;margin-right:6px}
+@media(max-width:640px){
+  form input{flex:1 1 100%}
+  .nav-menu{display:none}
+}
