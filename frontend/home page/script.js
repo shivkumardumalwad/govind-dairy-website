@@ -1,7 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("🏠 Home page script loaded");
 
-  // Search bar Enter key redirects to products with query
+  // --- Check Login Status ---
+  const token = localStorage.getItem("token");
+  const authLink = document.getElementById("auth-link");
+
+  if (token && authLink) {
+    fetch("http://localhost:5000/api/profile", {
+      headers: { Authorization: token }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user && data.user.username) {
+          authLink.textContent = `Logout (${data.user.username})`;
+          authLink.href = "#";
+          authLink.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            window.location.reload();
+          });
+        } else {
+          authLink.textContent = "Login";
+          authLink.href = "../login page/login.html";
+        }
+      })
+      .catch(err => {
+        console.error("Token check failed", err);
+        authLink.textContent = "Login";
+        authLink.href = "../login page/login.html";
+      });
+  } else if (authLink) {
+    authLink.textContent = "Login";
+    authLink.href = "../login page/login.html";
+  }
+
+  // --- Search functionality ---
   const searchInput = document.getElementById("search-home");
   if (searchInput) {
     searchInput.addEventListener("keypress", function (e) {
@@ -14,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Category navigation
+  // --- Category navigation ---
   const categoryCards = document.querySelectorAll(".category-card");
   categoryCards.forEach(card => {
     card.addEventListener("click", () => {
@@ -27,4 +59,16 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  // --- Protect Cart button ---
+  const cartBtn = document.querySelector(".cart-btn");
+  if (cartBtn) {
+    cartBtn.addEventListener("click", (e) => {
+      if (!token) {
+        e.preventDefault();
+        alert("Please log in to access your cart.");
+        window.location.href = "../login page/login.html";
+      }
+    });
+  }
 });

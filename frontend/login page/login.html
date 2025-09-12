@@ -24,25 +24,26 @@
   <footer><p>&copy; 2025 Govind Dairy Shop</p></footer>
 
 <script>
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const res = await fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-    const data = await res.json();
-    alert(data.msg);
-
-    if (data.token) {
-      localStorage.setItem("token", data.token); // ✅ Save token
-      window.location.href = "index.html";
-    }
+  const res = await fetch("http://localhost:5000/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
   });
+
+  const data = await res.json();
+  alert(data.msg);
+
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    window.location.href = "index.html"; // change to order.html or dashboard.html if needed
+  }
+});
 </script>
 </body>
 </html>

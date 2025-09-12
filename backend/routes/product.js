@@ -1,5 +1,5 @@
-const express = require("express");
-const Product = require("../models/Product");
+import express from 'express';
+import Product from '../models/Product.js';  // Ensure correct path for the Product model
 
 const router = express.Router();
 
@@ -61,4 +61,4 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;  // Use 'export default' instead of 'module.exports' for ES Modules
