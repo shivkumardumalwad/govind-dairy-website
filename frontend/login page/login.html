@@ -7,11 +7,18 @@
   <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-  <header><h2>🥛 Govind Dairy</h2></header>
+  <header>     <h2>🥛 Govind Dairy</h2></header>
 
   <main class="container">
     <div class="box">
-      <h2>Login</h2>
+      <h2 id="loginTitle">User Login</h2>
+
+      <!-- Buttons to toggle User/Admin login -->
+      <div class="login-toggle">
+        <button type="button" id="userBtn" class="active">User</button>
+        <button type="button" id="adminBtn">Admin</button>
+      </div>
+
       <form id="loginForm">
         <input type="text" id="username" placeholder="Username" required />
         <input type="password" id="password" placeholder="Password" required />
@@ -23,27 +30,7 @@
 
   <footer><p>&copy; 2025 Govind Dairy Shop</p></footer>
 
-<script>
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+<script src="login.js"></script>
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch("http://localhost:5000/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  alert(data.msg);
-
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    window.location.href = "index.html"; // change to order.html or dashboard.html if needed
-  }
-});
-</script>
 </body>
 </html>

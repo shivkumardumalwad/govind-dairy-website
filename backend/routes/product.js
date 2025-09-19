@@ -1,9 +1,10 @@
 import express from 'express';
-import Product from '../models/Product.js';  // Ensure correct path for the Product model
+import Product from '../models/Product.js';
+import verifyToken from '../middleware/verifyToken.js';  // import the middleware
 
 const router = express.Router();
 
-// Get all products
+// Public route: get all products
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -13,8 +14,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add product (admin)
-router.post("/", async (req, res) => {
+// Public route: get single product by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ msg: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ msg: "Error fetching product" });
+  }
+});
+
+// Protected route: add product (admin only)
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { name, price, category, description, image, stock } = req.body;
     if (!name || price == null || !category) {
@@ -30,8 +42,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Delete product (admin)
-router.delete("/:id", async (req, res) => {
+// Protected route: delete product (admin only)
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const deleted = await Product.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -43,8 +55,8 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Update product (optional admin feature)
-router.put("/:id", async (req, res) => {
+// Protected route: update product (admin only)
+router.put("/:id", verifyToken, async (req, res) => {
   try {
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
@@ -61,4 +73,4 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-export default router;  // Use 'export default' instead of 'module.exports' for ES Modules
+export default router;

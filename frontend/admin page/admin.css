@@ -1,5 +1,5 @@
 :root{
-  --primary:#0077cc;
+  --primary:#28a745;
   --muted:#f6f7fb;
   --card-bg:#ffffff;
   --danger:#d9534f;
@@ -12,15 +12,22 @@ body{
   background:var(--muted);
   color:#222;
 }
-.main-header{
-  background:var(--primary);
-  color:#fff;
-  padding:14px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: linear-gradient(90deg, #28a745, #6a1b9a); /* Green → Purple */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  color: white; /* Bonus: Ensure header text (including links) are white */
 }
-.logo{font-weight:700}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff; /* White logo text */
+}
+
 .nav-menu a{color:#fff;margin-left:12px;text-decoration:none}
 .container{
   max-width:1000px;

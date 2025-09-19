@@ -1,99 +1,161 @@
-const API_BASE = "http://localhost:5000/api";
-const productListEl = document.getElementById("productList");
 const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const addMsg = document.getElementById("addMsg");
 const productMsg = document.getElementById("productMsg");
 
-// fetch & render products
-async function loadProducts() {
-  productListEl.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
-  try {
-    const res = await fetch(`${API_BASE}/products`);
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const products = await res.json();
-    if (!Array.isArray(products) || products.length === 0) {
-      productListEl.innerHTML = "<tr><td colspan='5'>No products found</td></tr>";
-      return;
-    }
+const API_URL = "http://localhost:5000/api/products";
 
-    productListEl.innerHTML = "";
-    products.forEach(p => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(p.name)}</td>
-        <td>₹${Number(p.price).toFixed(2)}</td>
-        <td>${escapeHtml(p.category || "")}</td>
-        <td>${p.stock ?? 0}</td>
-        <td>
-          <button class="action-btn delete" data-id="${p._id}">Delete</button>
-        </td>`;
-      productListEl.appendChild(tr);
-    });
-  } catch (err) {
-    productListEl.innerHTML = `<tr><td colspan='5'>Error loading products</td></tr>`;
-    console.error(err);
-  }
-}
+// Load all products on page load
+window.addEventListener("DOMContentLoaded", fetchProducts);
 
-// create product
+// Add Product
 productForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  productMsg.textContent = "";
 
-  const name = document.getElementById("productName").value.trim();
-  const price = parseFloat(document.getElementById("productPrice").value);
-  const category = document.getElementById("productCategory").value.trim();
-  const description = document.getElementById("productDesc").value.trim();
-
-  if (!name || isNaN(price)) {
-    productMsg.textContent = "Please enter valid product name and price.";
-    return;
-  }
+  const payload = {
+    name: document.getElementById("name").value.trim(),
+    price: document.getElementById("price").value,
+    category: document.getElementById("category").value.trim(),
+    description: document.getElementById("description").value.trim(),
+    image: document.getElementById("image").value.trim(),
+    stock: document.getElementById("stock").value,
+  };
 
   try {
-    const res = await fetch(`${API_BASE}/products`, {
+    const res = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, price, category, description })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify(payload)
     });
+
     const data = await res.json();
-    if (!res.ok) throw new Error(data.msg || "Failed to add product");
-    productMsg.textContent = "Product added successfully.";
-    productForm.reset();
-    loadProducts();
+
+    if (res.ok) {
+      addMsg.textContent = "✅ Product added!";
+      productForm.reset();
+      fetchProducts();
+    } else {
+      addMsg.textContent = `❌ ${data.msg}`;
+    }
   } catch (err) {
-    productMsg.textContent = err.message || "Error adding product";
-    console.error(err);
+    console.error("Error adding product:", err);
+    addMsg.textContent = "❌ Server error while adding product.";
   }
 });
 
-// delete product (event delegation)
-productListEl.addEventListener("click", async (e) => {
-  if (!e.target.matches(".delete")) return;
-  const id = e.target.dataset.id;
-  if (!id) return;
-
-  if (!confirm("Delete this product?")) return;
-
+// Fetch all products
+async function fetchProducts() {
   try {
-    const res = await fetch(`${API_BASE}/products/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.msg || "Delete failed");
-    loadProducts();
-  } catch (err) {
-    alert("Error deleting product");
-    console.error(err);
-  }
-});
+    const res = await fetch(API_URL);
+    const products = await res.json();
 
-// small helper to avoid XSS
-function escapeHtml(str = "") {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    productList.innerHTML = "";
+
+    products.forEach((p) => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${p.name}</td>
+        <td>₹${p.price}</td>
+        <td>${p.category}</td>
+        <td>${p.stock || 0}</td>
+        <td>
+          <button onclick="editProduct('${p._id}')">Edit</button>
+          <button onclick="deleteProduct('${p._id}')">Delete</button>
+        </td>
+      `;
+
+      productList.appendChild(tr);
+    });
+  } catch (err) {
+    productMsg.textContent = "❌ Error loading products.";
+    console.error("Fetch error:", err);
+  }
 }
 
-// initial load
-loadProducts();
+// Delete product
+async function deleteProduct(id) {
+  if (!confirm("Are you sure you want to delete this product?")) return;
+
+  try {
+    const res = await fetch(`${API_URL}/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      fetchProducts();
+    } else {
+      alert(data.msg || "Error deleting");
+    }
+  } catch (err) {
+    console.error("Delete error:", err);
+  }
+}
+
+// Edit product - populate modal
+let currentEditId = null;
+
+function editProduct(id) {
+  currentEditId = id;
+
+  fetch(`${API_URL}/${id}`)
+    .then(res => res.json())
+    .then(p => {
+      document.getElementById("editName").value = p.name;
+      document.getElementById("editPrice").value = p.price;
+      document.getElementById("editCategory").value = p.category;
+      document.getElementById("editDescription").value = p.description || "";
+      document.getElementById("editImage").value = p.image || "";
+      document.getElementById("editStock").value = p.stock || 0;
+      document.getElementById("editModal").style.display = "block";
+    })
+    .catch(err => console.error("Fetch single product error:", err));
+}
+
+// Close modal
+function closeModal() {
+  document.getElementById("editModal").style.display = "none";
+  currentEditId = null;
+}
+
+// Update product
+document.getElementById("editForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById("editName").value,
+    price: document.getElementById("editPrice").value,
+    category: document.getElementById("editCategory").value,
+    description: document.getElementById("editDescription").value,
+    image: document.getElementById("editImage").value,
+    stock: document.getElementById("editStock").value,
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/${currentEditId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      closeModal();
+      fetchProducts();
+    } else {
+      alert(data.msg || "Error updating");
+    }
+  } catch (err) {
+    console.error("Update error:", err);
+  }
+});

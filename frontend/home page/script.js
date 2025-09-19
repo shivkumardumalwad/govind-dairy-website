@@ -1,36 +1,39 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () { 
   console.log("🏠 Home page script loaded");
 
-  // --- Check Login Status ---
+  const navMenu = document.getElementById("navMenu");
   const token = localStorage.getItem("token");
-  const authLink = document.getElementById("auth-link");
+  const username = localStorage.getItem("username");
 
-  if (token && authLink) {
-    fetch("http://localhost:5000/api/profile", {
-      headers: { Authorization: token }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.user && data.user.username) {
-          authLink.textContent = `Logout (${data.user.username})`;
-          authLink.href = "#";
-          authLink.addEventListener("click", () => {
-            localStorage.removeItem("token");
-            window.location.reload();
-          });
-        } else {
-          authLink.textContent = "Login";
-          authLink.href = "../login page/login.html";
-        }
-      })
-      .catch(err => {
-        console.error("Token check failed", err);
-        authLink.textContent = "Login";
-        authLink.href = "../login page/login.html";
-      });
-  } else if (authLink) {
-    authLink.textContent = "Login";
-    authLink.href = "../login page/login.html";
+  // Clear existing login/profile links if any (optional)
+  [...navMenu.querySelectorAll(".login-btn, .profile-link")].forEach(el => el.remove());
+
+  if (token && username) {
+    // Show profile icon and username linked to profile page
+    const profileLink = document.createElement("a");
+    profileLink.href = "../profile/profile.html";
+    profileLink.className = "profile-link";
+    profileLink.title = "View Profile";
+    profileLink.textContent = `👤 ${username}`;
+
+    // Add logout functionality on click (optional)
+    profileLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (confirm("Logout?")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.reload();
+      }
+    });
+
+    navMenu.appendChild(profileLink);
+  } else {
+    // Show login button
+    const loginLink = document.createElement("a");
+    loginLink.href = "../login page/login.html";
+    loginLink.className = "login-btn";
+    loginLink.textContent = "Login";
+    navMenu.appendChild(loginLink);
   }
 
   // --- Search functionality ---

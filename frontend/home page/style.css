@@ -11,7 +11,6 @@ a {
 }
 
 /* Header Navbar */
-/* Header Navbar */
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -19,6 +18,7 @@ a {
   padding: 15px 30px;
   background: linear-gradient(90deg, #28a745, #6a1b9a); /* Green → Purple */
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  color: white; /* Bonus: Ensure header text (including links) are white */
 }
 
 .logo {
@@ -67,8 +67,16 @@ a {
 .nav-menu {
   display: flex;
   gap: 15px;
+  align-items: center;
 }
 
+/* Cart button remains white */
+.cart-btn {
+  font-size: 20px;
+  color: #fff;
+}
+
+/* Login button */
 .login-btn {
   background: #fff;
   color: #28a745;
@@ -82,11 +90,25 @@ a {
   background: #f1f1f1;
 }
 
-.cart-btn {
-  font-size: 20px;
+/* Profile link styling (white color, Zepto-like clean look) */
+.profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
   color: #fff;
+  cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.05em;
+  padding: 6px 12px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.profile-link:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* subtle translucent white */
+  color: #ddd;
+}
 
 /* Hero Banner */
 .hero {

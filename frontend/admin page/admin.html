@@ -19,14 +19,17 @@
   <main class="container">
     <h2>Admin Dashboard</h2>
 
-    <section class="admin-section">
+    <section class="admin-panel">
       <h3>Add New Product</h3>
       <form id="productForm">
-        <input type="text" id="productName" placeholder="Product Name" required />
-        <input type="number" id="productPrice" placeholder="Price (₹)" min="0" step="0.01" required />
-        <input type="text" id="productCategory" placeholder="Category" />
-        <input type="text" id="productDesc" placeholder="Short description (optional)" />
-        <button type="submit" class="btn">Add Product</button>
+        <input type="text" id="name" placeholder="Product Name" required />
+        <input type="number" id="price" placeholder="Price" required />
+        <input type="text" id="category" placeholder="Category" required />
+        <input type="text" id="description" placeholder="Description" />
+        <input type="text" id="image" placeholder="Image URL" />
+        <input type="number" id="stock" placeholder="Stock" />
+        <button type="submit">Add Product</button>
+        <p id="addMsg"></p>
       </form>
 
       <h3>Product List</h3>
@@ -43,6 +46,23 @@
   <footer>
     <p>&copy; 2025 Govind Dairy Shop - Admin Panel</p>
   </footer>
+
+  <!-- Modal for editing product -->
+  <div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Edit Product</h3>
+      <form id="editForm">
+        <input type="text" id="editName" placeholder="Product Name" required />
+        <input type="number" id="editPrice" placeholder="Price" required />
+        <input type="text" id="editCategory" placeholder="Category" required />
+        <input type="text" id="editDescription" placeholder="Description" />
+        <input type="text" id="editImage" placeholder="Image URL" />
+        <input type="number" id="editStock" placeholder="Stock" />
+        <button type="submit">Update Product</button>
+        <button type="button" onclick="closeModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
 
   <script src="admin.js"></script>
 </body>
