@@ -3,10 +3,10 @@ const adminBtn = document.getElementById('adminBtn');
 const loginTitle = document.getElementById('loginTitle');
 const loginForm = document.getElementById('loginForm');
 
-let currentRole = 'user';  // default role
+let currentRole = 'customer';  // Default role is "customer" (same as "user")
 
 userBtn.addEventListener('click', () => {
-  currentRole = 'user';
+  currentRole = 'customer';
   loginTitle.textContent = 'User Login';
   userBtn.classList.add('active');
   adminBtn.classList.remove('active');
@@ -27,7 +27,6 @@ loginForm.addEventListener("submit", async (e) => {
   const username = loginForm.username.value.trim();
   const password = loginForm.password.value.trim();
 
-  // Payload including role
   const payload = { username, password, role: currentRole };
 
   try {
@@ -40,20 +39,22 @@ loginForm.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.token) {
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("username", username);
-  localStorage.setItem("role", currentRole);
-  alert("Login successful!");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("username", username);
+      localStorage.setItem("role", currentRole);
+      alert("Login successful!");
 
-  if (currentRole === "admin") {
-    window.location.href = "../admin page/admin.html";  // Redirect admin to admin panel
-  } else {
-    window.location.href = "../home page/index.html";    // Redirect user to home page
-  }
-}
-
+      if (currentRole === "admin") {
+        window.location.href = "../admin page/admin.html";
+      } else {
+        window.location.href = "../home page/index.html";
+      }
+    } else {
+      alert(data.msg || "Login failed!");
+    }
   } catch (error) {
     alert("Error connecting to server. Please try again.");
     console.error(error);
   }
 });
+

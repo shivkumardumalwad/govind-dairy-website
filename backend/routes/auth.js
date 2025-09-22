@@ -4,19 +4,18 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
 const router = express.Router();
-const SECRET = process.env.JWT_SECRET || "govinddairy_secret"; // Use env variable or fallback
+const SECRET = process.env.JWT_SECRET || "govinddairy_secret";
 
 // Register Route
 router.post("/register", async (req, res) => {
   try {
-    const { username, password, role } = req.body;  // accept role
+    const { username, password, role } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ msg: "Please provide username and password" });
+    if (!username || !password || !role) {
+      return res.status(400).json({ msg: "Please provide username, password, and role" });
     }
 
-    // Optional: Validate role, default to "customer"
-    if (role && !["customer", "admin"].includes(role)) {
+    if (!["customer", "admin"].includes(role)) {
       return res.status(400).json({ msg: "Invalid role" });
     }
 
@@ -24,7 +23,7 @@ router.post("/register", async (req, res) => {
     if (existing) return res.status(400).json({ msg: "User already exists!" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashed, role: role || "customer" });
+    const user = new User({ username, password: hashed, role });
     await user.save();
 
     res.json({ msg: "Registration successful!", success: true });
@@ -37,7 +36,7 @@ router.post("/register", async (req, res) => {
 // Login Route
 router.post("/login", async (req, res) => {
   try {
-    const { username, password, role } = req.body;  // accept role
+    const { username, password, role } = req.body;
 
     if (!username || !password || !role) {
       return res.status(400).json({ msg: "Please provide username, password and role" });
@@ -46,7 +45,6 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ msg: "User not found!" });
 
-    // Check user role matches requested role
     if (user.role !== role) {
       return res.status(403).json({ msg: "Unauthorized role" });
     }
@@ -73,7 +71,6 @@ router.get("/profile", (req, res) => {
   if (!token) return res.status(401).json({ msg: "No token provided" });
 
   try {
-    // Assuming token comes as "Bearer <token>"
     const actualToken = token.startsWith("Bearer ") ? token.slice(7) : token;
     const decoded = jwt.verify(actualToken, SECRET);
     res.json({ msg: "Profile data", user: decoded });
@@ -83,3 +80,4 @@ router.get("/profile", (req, res) => {
 });
 
 export default router;
+;

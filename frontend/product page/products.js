@@ -1,90 +1,138 @@
-const products = [
-  { name: "Full Cream Milk", price: 60, category: "milk" },
-  { name: "Paneer (250g)", price: 90, category: "paneer" },
-  { name: "Curd (500g)", price: 40, category: "curd" },
-  { name: "Desi Ghee (500g)", price: 220, category: "ghee" },
-  { name: "Organic Paneer", price: 120, category: "paneer" },
-  { name: "Buffalo Ghee", price: 250, category: "ghee" },
-  { name: "Toned Milk", price: 55, category: "milk" },
-  { name: "Greek Yogurt", price: 80, category: "curd" }
-];
+const productList = document.getElementById("productList");
+const searchInput = document.getElementById("search");
+const categorySelect = document.getElementById("category");
 
-const list = document.getElementById("productList");
-const search = document.getElementById("search");
-const category = document.getElementById("category");
+let products = [];
+const quantities = {}; // Track quantity per product
 
-function getCart() {
-  return JSON.parse(localStorage.getItem("cart")) || [];
+// Get URL parameters
+function getQueryParams() {
+  const params = {};
+  const query = window.location.search.substring(1);
+  query.split("&").forEach(pair => {
+    if (!pair) return;
+    const [key, value] = pair.split("=");
+    params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+  });
+  return params;
 }
 
-function saveCart(cart) {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function updateQuantity(name, change) {
-  const cart = getCart();
-  const index = cart.findIndex(item => item.name === name);
-  if (index > -1) {
-    cart[index].quantity += change;
-    if (cart[index].quantity <= 0) {
-      cart.splice(index, 1);
-    }
-  } else if (change > 0) {
-    cart.push({ name, quantity: 1 });
-  }
-  saveCart(cart);
-  updateDisplayCount(name);
-}
-
-function getProductQuantity(name) {
-  const cart = getCart();
-  const item = cart.find(p => p.name === name);
-  return item ? item.quantity : 0;
-}
-
-function updateDisplayCount(name) {
-  const countSpan = document.getElementById(`count-${name.replace(/\s/g, '')}`);
-  if (countSpan) {
-    countSpan.innerText = getProductQuantity(name);
+// Fetch products
+async function fetchProducts() {
+  try {
+    const res = await fetch("http://localhost:5000/api/products");
+    if (!res.ok) throw new Error("Failed to fetch products");
+    products = await res.json();
+    applyInitialFilters();
+  } catch (err) {
+    productList.innerHTML = `<p style="color: red;">Error loading products: ${err.message}</p>`;
   }
 }
 
-function renderProducts() {
-  const searchTerm = search.value.toLowerCase();
-  const cat = category.value;
-  list.innerHTML = "";
+// Display products
+function displayProducts(items) {
+  if (items.length === 0) {
+    productList.innerHTML = "<p>No products found.</p>";
+    return;
+  }
 
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm) &&
-    (cat === "" || p.category === cat)
-  );
+  productList.innerHTML = items.map(product => {
+    const qty = quantities[product._id] ?? 0;
 
-  filtered.forEach(p => {
-    const qty = getProductQuantity(p.name);
-    const idName = p.name.replace(/\s/g, '');
-    const div = document.createElement("div");
-    div.className = "product";
-    div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p>₹${p.price}</p>
-      <div class="quantity-controls">
-        <button onclick="updateQuantity('${p.name}', -1)">-</button>
-        <span id="count-${idName}">${qty}</span>
-        <button onclick="updateQuantity('${p.name}', 1)">+</button>
+    return `
+      <div class="product-card">
+        <img src="${product.image || '../assets/placeholder.jpg'}" alt="${product.name}" />
+        <h3>${product.name}</h3>
+        <p>₹${product.price}</p>
+        <p>Category: ${product.category}</p>
+        <p>${product.description || ''}</p>
+
+        <div class="quantity-controls">
+          <button class="qty-btn" onclick="decreaseQty('${product._id}')">−</button>
+          <span id="qty-${product._id}">${qty}</span>
+          <button class="qty-btn" onclick="increaseQty('${product._id}', ${product.stock || 0})">+</button>
+        </div>
+
+        <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
       </div>
     `;
-    list.appendChild(div);
-  });
+  }).join('');
 }
 
-// Initial filter from URL
-const urlParams = new URLSearchParams(window.location.search);
-const initSearch = urlParams.get('search') || '';
-const initCategory = urlParams.get('category') || '';
-search.value = initSearch;
-category.value = initCategory;
+// Filter logic
+function filterProducts() {
+  const searchTerm = searchInput.value.toLowerCase();
+  const selectedCategory = categorySelect.value.toLowerCase();
 
-search.addEventListener("input", renderProducts);
-category.addEventListener("change", renderProducts);
+  const filtered = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm);
+    const matchesCategory = selectedCategory === '' || p.category.toLowerCase() === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-renderProducts();
+  displayProducts(filtered);
+}
+
+// Apply filters from URL
+function applyInitialFilters() {
+  const params = getQueryParams();
+  if (params.search) searchInput.value = params.search;
+  if (params.category) categorySelect.value = params.category;
+  filterProducts();
+}
+
+// Event listeners
+searchInput.addEventListener('input', filterProducts);
+categorySelect.addEventListener('change', filterProducts);
+
+// Quantity Management
+function increaseQty(productId, maxStock) {
+  if (!quantities[productId]) quantities[productId] = 0;
+
+  if (quantities[productId] < maxStock) {
+    quantities[productId]++;
+    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
+  }
+}
+
+function decreaseQty(productId) {
+  if (!quantities[productId]) quantities[productId] = 0;
+
+  if (quantities[productId] > 0) {
+    quantities[productId]--;
+    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
+  }
+}
+
+// Add to cart logic (basic)
+function addToCart(productId) {
+  const qty = quantities[productId] || 0;
+  const product = products.find(p => p._id === productId);
+  if (!product || qty === 0) return;
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const index = cart.findIndex(item => item._id === productId);
+
+  if (index !== -1) {
+    cart[index].quantity += qty;
+    if (cart[index].quantity > product.stock) {
+      cart[index].quantity = product.stock;
+    }
+  } else {
+    cart.push({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      quantity: qty,
+      stock: product.stock, // needed for limits
+      image: product.image
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert(`✅ Added ${qty} × ${product.name} to cart`);
+}
+
+
+// Init
+fetchProducts();

@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Checkout | Govind Dairy Shop</title>
-    <link rel="stylesheet" href="../home page/style.css" />
-
+  <link rel="stylesheet" href="../home page/style.css" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="checkout.css">
 </head>
 <body>
   <header class="main-header">
@@ -22,11 +22,11 @@
     <h2 style="text-align: center;">Checkout</h2>
     <div class="checkout-box">
       <form id="checkoutForm">
-        <input type="text" placeholder="Full Name" required />
-        <input type="text" placeholder="Address" required />
-        <input type="text" placeholder="City" required />
-        <input type="text" placeholder="Postal Code" required />
-        <input type="text" placeholder="Phone Number" required />
+        <input type="text" id="fullName" name="fullName" placeholder="Full Name" required />
+        <input type="text" id="address" name="address" placeholder="Address" required />
+        <input type="text" id="city" name="city" placeholder="City" required />
+        <input type="text" id="postalCode" name="postalCode" placeholder="Postal Code" required />
+        <input type="tel" id="phone" name="phone" placeholder="Phone Number" required pattern="^\d{10}$" title="Enter a 10-digit phone number" />
         <button type="submit">Place Order</button>
       </form>
     </div>
@@ -39,9 +39,25 @@
   <script>
     document.getElementById("checkoutForm").addEventListener("submit", function (e) {
       e.preventDefault();
+
+      // Optional: Collect form data
+      const formData = {
+        fullName: this.fullName.value.trim(),
+        address: this.address.value.trim(),
+        city: this.city.value.trim(),
+        postalCode: this.postalCode.value.trim(),
+        phone: this.phone.value.trim()
+      };
+
+      // Here you can do more validation or send data to backend if you have one
+      
       alert("Order placed successfully! Thank you for shopping with us.");
+
+      // Clear cart
       localStorage.removeItem("cart");
-      window.location.href = "index.html";
+
+      // Redirect to homepage
+      window.location.href = "../home page/index.html";
     });
   </script>
 </body>

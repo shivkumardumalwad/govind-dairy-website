@@ -15,6 +15,14 @@
       <form id="registerForm">
         <input type="text" id="username" placeholder="Username" required />
         <input type="password" id="password" placeholder="Password" required />
+
+        <!-- Added role dropdown -->
+        <select id="role" required>
+          <option value="" disabled selected>Select Role</option>
+          <option value="customer">User</option>
+          <option value="admin">Admin</option>
+        </select>
+
         <button type="submit">Register</button>
       </form>
       <p>Already have an account? <a href="login.html">Login</a></p>
@@ -23,49 +31,40 @@
 
   <footer><p>&copy; 2025 Govind Dairy Shop</p></footer>
 
-<script>
-document.getElementById("registerForm").addEventListener("submit", async (e) => {document.getElementById("registerForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const role = document.getElementById("role").value;
 
-  const res = await fetch("http://localhost:5000/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
+      if (!role) {
+        alert("Please select a role");
+        return;
+      }
 
-  const data = await res.json();
-  alert(data.msg);
+      try {
+        const res = await fetch("http://localhost:5000/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, role })
+        });
 
-  if (data.success) {
-    // Wait 500ms after alert is closed before redirecting
-    setTimeout(() => {
-      window.location.href = "login.html";
-    }, 500);
-  }
-});
+        const data = await res.json();
+        alert(data.msg);
 
-  e.preventDefault();
-
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch("http://localhost:5000/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  alert(data.msg);
-
-  if (data.success) {
-    window.location.href = "login.html";
-  }
-});
-</script>
-
+        if (data.success) {
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 500);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error. Try again later.");
+      }
+    });
+  </script>
 </body>
 </html>
+

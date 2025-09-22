@@ -1,24 +1,44 @@
-const express = require("express");
-const Order = require("../models/Order");
+import express from 'express';
+import Order from '../models/order.js';
 
 const router = express.Router();
 
-// Place order
-router.post("/", async (req, res) => {
+// POST /api/orders - place an order
+router.post('/', async (req, res) => {
   try {
-    const { user, items, total } = req.body;
-    const order = new Order({ user, items, total });
+    const { customerName, address, city, postalCode, phoneNumber, items, totalPrice } = req.body;
+
+    if (!customerName || !address || !city || !postalCode || !phoneNumber || !items || items.length === 0) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const order = new Order({
+      customerName,
+      address,
+      city,
+      postalCode,
+      phoneNumber,
+      items,
+      totalPrice,
+    });
+
     await order.save();
-    res.json({ msg: "Order placed successfully", order });
-  } catch (err) {
-    res.status(500).json({ msg: "Error placing order" });
+
+    res.status(201).json({ message: 'Order placed successfully', orderId: order._id });
+  } catch (error) {
+    console.error('Order error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get user orders
-router.get("/:userId", async (req, res) => {
-  const orders = await Order.find({ user: req.params.userId }).populate("items.product");
-  res.json(orders);
+// (Optional) GET /api/orders - get all orders (admin)
+router.get('/', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-module.exports = router;
+export default router;
