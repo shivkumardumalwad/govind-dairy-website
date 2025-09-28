@@ -3,29 +3,18 @@ const searchInput = document.getElementById("search");
 const categorySelect = document.getElementById("category");
 
 let products = [];
-const quantities = {}; // Track quantity per product
-
-// Get URL parameters
-function getQueryParams() {
-  const params = {};
-  const query = window.location.search.substring(1);
-  query.split("&").forEach(pair => {
-    if (!pair) return;
-    const [key, value] = pair.split("=");
-    params[decodeURIComponent(key)] = decodeURIComponent(value || "");
-  });
-  return params;
-}
+const quantities = {};
 
 // Fetch products
 async function fetchProducts() {
   try {
     const res = await fetch("http://localhost:5000/api/products");
-    if (!res.ok) throw new Error("Failed to fetch products");
-    products = await res.json();
-    applyInitialFilters();
+    const data = await res.json();
+    products = data.products || [];
+    filterProducts();
   } catch (err) {
-    productList.innerHTML = `<p style="color: red;">Error loading products: ${err.message}</p>`;
+    productList.innerHTML = `<p style="color:red;">Error loading products</p>`;
+    console.error(err);
   }
 }
 
@@ -38,101 +27,68 @@ function displayProducts(items) {
 
   productList.innerHTML = items.map(product => {
     const qty = quantities[product._id] ?? 0;
-
     return `
       <div class="product-card">
-        <img src="${product.image || '../assets/placeholder.jpg'}" alt="${product.name}" />
+        <img src="${product.image || '../assets/placeholder.jpg'}" alt="${product.name}" onerror="this.src='../assets/placeholder.jpg'" />
         <h3>${product.name}</h3>
         <p>₹${product.price}</p>
         <p>Category: ${product.category}</p>
         <p>${product.description || ''}</p>
-
         <div class="quantity-controls">
-          <button class="qty-btn" onclick="decreaseQty('${product._id}')">−</button>
+          <button onclick="decreaseQty('${product._id}')">−</button>
           <span id="qty-${product._id}">${qty}</span>
-          <button class="qty-btn" onclick="increaseQty('${product._id}', ${product.stock || 0})">+</button>
+          <button onclick="increaseQty('${product._id}', ${product.stock || 0})">+</button>
         </div>
-
-        <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+        <button onclick="addToCart('${product._id}')">Add to Cart</button>
       </div>
     `;
   }).join('');
 }
 
-// Filter logic
+// Filter products
 function filterProducts() {
   const searchTerm = searchInput.value.toLowerCase();
   const selectedCategory = categorySelect.value.toLowerCase();
-
-  const filtered = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm);
-    const matchesCategory = selectedCategory === '' || p.category.toLowerCase() === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
+  const filtered = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm) &&
+    (selectedCategory === '' || p.category.toLowerCase() === selectedCategory)
+  );
   displayProducts(filtered);
 }
 
-// Apply filters from URL
-function applyInitialFilters() {
-  const params = getQueryParams();
-  if (params.search) searchInput.value = params.search;
-  if (params.category) categorySelect.value = params.category;
-  filterProducts();
-}
+searchInput.addEventListener("input", filterProducts);
+categorySelect.addEventListener("change", filterProducts);
 
-// Event listeners
-searchInput.addEventListener('input', filterProducts);
-categorySelect.addEventListener('change', filterProducts);
-
-// Quantity Management
-function increaseQty(productId, maxStock) {
-  if (!quantities[productId]) quantities[productId] = 0;
-
-  if (quantities[productId] < maxStock) {
-    quantities[productId]++;
-    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
+// Quantity controls
+function increaseQty(id, max) {
+  if (!quantities[id]) quantities[id] = 0;
+  if (quantities[id] < max) {
+    quantities[id]++;
+    document.getElementById(`qty-${id}`).textContent = quantities[id];
   }
 }
 
-function decreaseQty(productId) {
-  if (!quantities[productId]) quantities[productId] = 0;
-
-  if (quantities[productId] > 0) {
-    quantities[productId]--;
-    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
+function decreaseQty(id) {
+  if (!quantities[id]) quantities[id] = 0;
+  if (quantities[id] > 0) {
+    quantities[id]--;
+    document.getElementById(`qty-${id}`).textContent = quantities[id];
   }
 }
 
-// Add to cart logic (basic)
-function addToCart(productId) {
-  const qty = quantities[productId] || 0;
-  const product = products.find(p => p._id === productId);
-  if (!product || qty === 0) return;
-
+// Add to cart
+function addToCart(id) {
+  const qty = quantities[id] || 0;
+  if (qty === 0) return alert("Select quantity first");
+  const product = products.find(p => p._id === id);
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const index = cart.findIndex(item => item._id === productId);
+  const index = cart.findIndex(i => i._id === id);
 
-  if (index !== -1) {
-    cart[index].quantity += qty;
-    if (cart[index].quantity > product.stock) {
-      cart[index].quantity = product.stock;
-    }
-  } else {
-    cart.push({
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      quantity: qty,
-      stock: product.stock, // needed for limits
-      image: product.image
-    });
-  }
+  if (index !== -1) cart[index].quantity = Math.min(cart[index].quantity + qty, product.stock);
+  else cart.push({ ...product, quantity: qty });
 
   localStorage.setItem("cart", JSON.stringify(cart));
-  alert(`✅ Added ${qty} × ${product.name} to cart`);
+  alert(`Added ${qty} × ${product.name} to cart`);
 }
 
-
-// Init
-fetchProducts();
+window.addEventListener("DOMContentLoaded", fetchProducts);

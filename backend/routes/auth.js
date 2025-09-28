@@ -1,4 +1,4 @@
-import express from "express";
+import express from "express"; 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
@@ -58,7 +58,14 @@ router.post("/login", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.json({ msg: "Login successful!", token, success: true, role: user.role });
+    // ✅ Send full user details for frontend storage
+    res.json({
+      msg: "Login successful!",
+      token,
+      success: true,
+      role: user.role,
+      username: user.username   // <-- send username explicitly
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error logging in" });
@@ -80,4 +87,3 @@ router.get("/profile", (req, res) => {
 });
 
 export default router;
-;

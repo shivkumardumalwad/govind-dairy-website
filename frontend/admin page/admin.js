@@ -5,19 +5,20 @@ const productMsg = document.getElementById("productMsg");
 
 const API_URL = "http://localhost:5000/api/products";
 
-// Load all products on page load
+let currentEditId = null;
+
+// Load all products
 window.addEventListener("DOMContentLoaded", fetchProducts);
 
 // Add Product
 productForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const payload = {
     name: document.getElementById("name").value.trim(),
     price: document.getElementById("price").value,
     category: document.getElementById("category").value.trim(),
     description: document.getElementById("description").value.trim(),
-    image: document.getElementById("image").value.trim(),
+    image: document.getElementById("image").value.trim(), // must be valid URL
     stock: document.getElementById("stock").value,
   };
 
@@ -32,7 +33,6 @@ productForm.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-
     if (res.ok) {
       addMsg.textContent = "✅ Product added!";
       productForm.reset();
@@ -46,17 +46,16 @@ productForm.addEventListener("submit", async (e) => {
   }
 });
 
-// Fetch all products
+// Fetch Products
 async function fetchProducts() {
   try {
     const res = await fetch(API_URL);
-    const products = await res.json();
+    const data = await res.json();
+    const products = data.products || [];
 
     productList.innerHTML = "";
-
-    products.forEach((p) => {
+    products.forEach(p => {
       const tr = document.createElement("tr");
-
       tr.innerHTML = `
         <td>${p.name}</td>
         <td>₹${p.price}</td>
@@ -67,7 +66,6 @@ async function fetchProducts() {
           <button onclick="deleteProduct('${p._id}')">Delete</button>
         </td>
       `;
-
       productList.appendChild(tr);
     });
   } catch (err) {
@@ -76,35 +74,24 @@ async function fetchProducts() {
   }
 }
 
-// Delete product
+// Delete Product
 async function deleteProduct(id) {
   if (!confirm("Are you sure you want to delete this product?")) return;
 
   try {
     const res = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     });
-
     const data = await res.json();
-    if (res.ok) {
-      fetchProducts();
-    } else {
-      alert(data.msg || "Error deleting");
-    }
-  } catch (err) {
-    console.error("Delete error:", err);
-  }
+    if (res.ok) fetchProducts();
+    else alert(data.msg || "Error deleting");
+  } catch (err) { console.error("Delete error:", err); }
 }
 
-// Edit product - populate modal
-let currentEditId = null;
-
+// Edit Product
 function editProduct(id) {
   currentEditId = id;
-
   fetch(`${API_URL}/${id}`)
     .then(res => res.json())
     .then(p => {
@@ -125,7 +112,7 @@ function closeModal() {
   currentEditId = null;
 }
 
-// Update product
+// Update Product
 document.getElementById("editForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const payload = {
@@ -148,14 +135,7 @@ document.getElementById("editForm").addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-
-    if (res.ok) {
-      closeModal();
-      fetchProducts();
-    } else {
-      alert(data.msg || "Error updating");
-    }
-  } catch (err) {
-    console.error("Update error:", err);
-  }
+    if (res.ok) { closeModal(); fetchProducts(); }
+    else alert(data.msg || "Error updating");
+  } catch (err) { console.error("Update error:", err); }
 });

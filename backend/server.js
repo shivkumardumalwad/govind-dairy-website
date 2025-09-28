@@ -4,6 +4,9 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js'; // Make sure this file exists
 import orderRoutes from './routes/orders.js';
+import adminRoutes from './routes/admin.js';
+
+
 
 // ...
 
@@ -30,6 +33,8 @@ app.use('/api/orders', orderRoutes);
 app.get('/', (req, res) => {
   res.send('🥛 Govind Dairy API is running...');
 });
+// for orders
+app.use('/api/admin', adminRoutes);
 
 // Start server on specified port or 5000 by default
 const PORT = process.env.PORT || 5000;

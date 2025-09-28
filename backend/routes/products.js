@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find();
-    res.json(products);
+    res.json({ products }); // return as object for consistency
   } catch (err) {
     console.error("Error fetching products:", err);
     res.status(500).json({ msg: "Server error while fetching products." });
@@ -19,6 +19,10 @@ router.get("/", async (req, res) => {
 router.post("/", authenticateToken, authorizeAdmin, async (req, res) => {
   try {
     const { name, price, category, description, image, stock } = req.body;
+    if (!name || !price || !category) {
+      return res.status(400).json({ msg: "Name, price, and category are required." });
+    }
+
     const product = new Product({ name, price, category, description, image, stock });
     await product.save();
     res.status(201).json({ msg: "Product added!", product });
@@ -52,7 +56,7 @@ router.delete("/:id", authenticateToken, authorizeAdmin, async (req, res) => {
   }
 });
 
-// GET product by ID (for editing)
+// GET product by ID (public, for editing)
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -65,4 +69,3 @@ router.get("/:id", async (req, res) => {
 });
 
 export default router;
-

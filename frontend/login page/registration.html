@@ -1,13 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register | Govind Dairy Shop</title>
+  <link rel="stylesheet" href="../home page/style.css" />
   <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-  <header><h2>🥛 Govind Dairy</h2></header>
+  <header>
+    <h2>🥛 Govind Dairy</h2>
+    <nav class="nav-menu">
+      <a href="../home page/index.html">Home</a> 
+    </nav>
+  </header>
 
   <main class="container">
     <div class="box">
@@ -15,21 +22,15 @@
       <form id="registerForm">
         <input type="text" id="username" placeholder="Username" required />
         <input type="password" id="password" placeholder="Password" required />
-
-        <!-- Added role dropdown -->
-        <select id="role" required>
-          <option value="" disabled selected>Select Role</option>
-          <option value="customer">User</option>
-          <option value="admin">Admin</option>
-        </select>
-
         <button type="submit">Register</button>
       </form>
-      <p>Already have an account? <a href="login.html">Login</a></p>
+      <p>Already have an account? <a id=link href="login.html">Login</a></p>
     </div>
   </main>
 
-  <footer><p>&copy; 2025 Govind Dairy Shop</p></footer>
+  <footer>
+    <p>&copy; 2025 Govind Dairy Shop</p>
+  </footer>
 
   <script>
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -37,18 +38,12 @@
 
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-      const role = document.getElementById("role").value;
-
-      if (!role) {
-        alert("Please select a role");
-        return;
-      }
 
       try {
         const res = await fetch("http://localhost:5000/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, role })
+          body: JSON.stringify({ username, password }) // role removed
         });
 
         const data = await res.json();
@@ -65,6 +60,6 @@
       }
     });
   </script>
+
 </body>
 </html>
-

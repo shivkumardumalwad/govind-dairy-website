@@ -3,8 +3,9 @@ const adminBtn = document.getElementById('adminBtn');
 const loginTitle = document.getElementById('loginTitle');
 const loginForm = document.getElementById('loginForm');
 
-let currentRole = 'customer';  // Default role is "customer" (same as "user")
+let currentRole = 'customer';  // Default role is "customer"
 
+// Switch role to customer
 userBtn.addEventListener('click', () => {
   currentRole = 'customer';
   loginTitle.textContent = 'User Login';
@@ -13,6 +14,7 @@ userBtn.addEventListener('click', () => {
   loginForm.username.placeholder = "Username";
 });
 
+// Switch role to admin
 adminBtn.addEventListener('click', () => {
   currentRole = 'admin';
   loginTitle.textContent = 'Admin Login';
@@ -21,11 +23,17 @@ adminBtn.addEventListener('click', () => {
   loginForm.username.placeholder = "Admin Username";
 });
 
+// Handle login submit
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const username = loginForm.username.value.trim();
   const password = loginForm.password.value.trim();
+
+  if (!username || !password) {
+    alert("Please enter both username and password");
+    return;
+  }
 
   const payload = { username, password, role: currentRole };
 
@@ -38,13 +46,15 @@ loginForm.addEventListener("submit", async (e) => {
 
     const data = await res.json();
 
-    if (data.token) {
+    if (data.success && data.token) {
+      // ✅ Always use backend response for username & role
       localStorage.setItem("token", data.token);
-      localStorage.setItem("username", username);
-      localStorage.setItem("role", currentRole);
+      localStorage.setItem("username", data.username || username);
+      localStorage.setItem("role", data.role || currentRole);
+
       alert("Login successful!");
 
-      if (currentRole === "admin") {
+      if (data.role === "admin") {
         window.location.href = "../admin page/admin.html";
       } else {
         window.location.href = "../home page/index.html";
@@ -57,4 +67,3 @@ loginForm.addEventListener("submit", async (e) => {
     console.error(error);
   }
 });
-
