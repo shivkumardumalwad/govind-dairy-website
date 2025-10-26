@@ -1,13 +1,17 @@
 import express from "express";
-import Order from "../models/orders.js";
+import Order from "../models/order.js";
 import { authenticateToken, authorizeAdmin } from "../middlewares/authmiddleware.js";
 
 const router = express.Router();
 
-// Create new order (customer checkout)
+// ✅ Create new order (customer checkout)
 router.post("/", async (req, res) => {
   try {
     const { customerName, address, city, postalCode, phoneNumber, items, totalPrice } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ msg: "Order must have items" });
+    }
 
     const order = new Order({
       customerName,
@@ -28,8 +32,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Admin: Get all orders
-router.get("/admin/orders", authenticateToken, authorizeAdmin, async (req, res) => {
+// ✅ Admin: Get all orders
+router.get("/orders", authenticateToken, authorizeAdmin, async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json({ orders });

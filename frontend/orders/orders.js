@@ -4,44 +4,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   const role = localStorage.getItem("role");
 
   if (!token || role !== "admin") {
-    tableBody.innerHTML = `<tr><td colspan="6">❌ Unauthorized. Please log in as admin.</td></tr>`;
+    tableBody.innerHTML =
+      "<tr><td colspan='8'>Unauthorized. Please login as admin.</td></tr>";
     return;
   }
 
   try {
+    console.log("Orders.js loaded");
+
     const res = await fetch("http://localhost:5000/api/admin/orders", {
-      method: "GET",
-      headers: {
-        "Authorization": "Bearer " + token
-      }
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();
+    console.log("Fetched data:", data);
 
-    if (!res.ok) {
-      tableBody.innerHTML = `<tr><td colspan="6">❌ Error: ${data.msg}</td></tr>`;
+    const ordersArray = data.orders || [];
+    if (ordersArray.length === 0) {
+      tableBody.innerHTML =
+        "<tr><td colspan='8'>No orders found</td></tr>";
       return;
     }
 
-    if (!data.orders || data.orders.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="6">No orders found</td></tr>`;
-      return;
-    }
-
-    data.orders.forEach(order => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${order._id}</td>
-        <td>${order.customerName}</td>
-        <td>${order.items.map(i => `${i.name} (x${i.quantity})`).join(", ")}</td>
-        <td>₹${order.totalPrice}</td>
-        <td>${order.status || "Pending"}</td>
-        <td>${new Date(order.createdAt).toLocaleString()}</td>
+    tableBody.innerHTML = "";
+    ordersArray.forEach((order, index) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${order.customerName || "N/A"}</td>
+          <td>${order.address || "N/A"}, ${order.city || ""} ${order.postalCode || ""}</td>
+          <td>${order.phoneNumber || "N/A"}</td>
+          <td>${
+            Array.isArray(order.items)
+              ? order.items.map(i => `${i.product || i.name} x${i.quantity} (${i.price}₹)`).join(", ")
+              : "N/A"
+          }</td>
+          <td>${order.totalPrice || "N/A"}₹</td>
+          <td>${order.status || "Pending"}</td>
+          <td>${new Date(order.createdAt).toLocaleString()}</td>
+        </tr>
       `;
-      tableBody.appendChild(row);
     });
   } catch (err) {
-    console.error(err);
-    tableBody.innerHTML = `<tr><td colspan="6">❌ Failed to load orders</td></tr>`;
+    console.error("Error fetching orders:", err);
+    tableBody.innerHTML = "<tr><td colspan='8'>Server error</td></tr>";
   }
 });

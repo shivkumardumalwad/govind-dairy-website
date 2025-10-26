@@ -1,17 +1,28 @@
 import express from "express";
-import Order from "../models/orders.js";
-import { authenticateToken, authorizeAdmin } from "../middlewares/authmiddleware.js";
+import jwt from "jsonwebtoken";
+import Order from "../models/order.js";
 
 const router = express.Router();
+const SECRET = process.env.JWT_SECRET || "govinddairy_secret";
 
-// Get all orders for admin
-router.get("/orders", authenticateToken, authorizeAdmin, async (req, res) => {
+router.get("/orders", async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json({ orders });
+    const token = req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.slice(7)
+      : null;
+
+    if (!token) return res.status(401).json({ msg: "No token provided" });
+
+    const decoded = jwt.verify(token, SECRET);
+
+    if (decoded.role !== "admin")
+      return res.status(403).json({ msg: "Unauthorized role" });
+
+    const orders = await Order.find().sort({ createdAt: -1 }); 
+    res.json({ orders }); // Send as object with orders array
   } catch (err) {
-    console.error("Fetch orders error:", err);
-    res.status(500).json({ msg: "Server error fetching orders" });
+    console.error("Admin orders error:", err);
+    res.status(500).json({ msg: "Error fetching orders" });
   }
 });
 

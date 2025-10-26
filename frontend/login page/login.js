@@ -23,6 +23,8 @@ adminBtn.addEventListener('click', () => {
   loginForm.username.placeholder = "Admin Username";
 });
 
+
+
 // Handle login submit
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -41,20 +43,22 @@ loginForm.addEventListener("submit", async (e) => {
     const res = await fetch("http://localhost:5000/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
 
     if (data.success && data.token) {
-      // ✅ Always use backend response for username & role
+      // ✅ Store role as lowercase and trim spaces
+      const userRole = (data.role || currentRole).trim().toLowerCase();
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username || username);
-      localStorage.setItem("role", data.role || currentRole);
+      localStorage.setItem("role", userRole);  // Updated line
 
       alert("Login successful!");
 
-      if (data.role === "admin") {
+      if (userRole === "admin") {
         window.location.href = "../admin page/admin.html";
       } else {
         window.location.href = "../home page/index.html";
@@ -67,3 +71,4 @@ loginForm.addEventListener("submit", async (e) => {
     console.error(error);
   }
 });
+
